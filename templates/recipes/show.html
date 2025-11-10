@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as m %}
+{% block title %}{{ r.name }}{% endblock %}
+{% block content %}
+<article class="recipe-show pro">
+  <div class="head">
+    <div class="cover-lg">{{ m.cover(r.image_url, r.name) }}</div>
+    <div class="meta">
+      <div class="recipe-header">
+        <h2>
+          {{ r.name }}
+          {% if r.category %}
+            <span class="badge">{{ r.category.name }}</span>
+          {% endif %}
+        </h2>
+
+        <div class="action-buttons">
+          {% if current_user.is_authenticated and current_user.id == r.user_id %}
+            <a class="btn-gray" href="{{ url_for('recipes.edit', rid=r.id) }}">
+              <i class="fa fa-pen"></i> 編輯
+            </a>
+            <form action="{{ url_for('recipes.delete', rid=r.id) }}" method="post" style="display:inline;">
+              <button type="submit" class="btn-gray">
+                <i class="fa fa-trash"></i> 刪除
+              </button>
+            </form>
+          {% endif %}
+        </div>
+        
+      </div>
+      <p class="desc">{{ r.description or '—' }}</p>
+      <p class="muted"><i class="fa-regular fa-clock"></i> {{ r.cook_time_min }} 分鐘</p>
+      {% set avg = (r.reviews|map(attribute='rating')|list)|length and ((r.reviews|map(attribute='rating')|sum) / (r.reviews|length)) or 0 %}
+      <div class="stars big">{{ m.stars(avg) }} <small>{{ '%.1f' % avg }}</small></div>
+    </div>
+  </div>
+
+    <section class="grid2">
+        <div>
+        <h3>步驟</h3>
+        <ol class="steps">
+            {% for s in r.steps %}<li>{{ s.step }}</li>{% endfor %}
+        </ol>
+        </div>
+        <section>
+    <h3>食材</h3>
+    <ul class="ingredients">
+        {% for need, ing in needs %}
+        <li>{{ ing.name }} — {{ need.quantity|int if need.quantity == need.quantity|int else need.quantity }} {{ need.unit }}</li>
+        {% endfor %}
+    </ul>
+    </section>
+
+  </section>
+
+<!-- 新增：評論區塊 -->
+  <section id="reviews" class="reviews">
+    <h3>評論</h3>
+
+    {# 清單：顯示所有評論 #}
+    {% if reviews and reviews|length %}
+      <ul class="review-list">
+        {% for rv in reviews %}
+          <li class="review-item">
+            <div class="meta">
+              <strong>
+                {{ rv.user.username }}
+              </strong>
+              <span class="stars small">{{ m.stars(rv.rating) }}</span>
+              <small class="muted">
+                {{ rv.created_at.strftime('%Y-%m-%d %H:%M') if rv.created_at else '' }}
+              </small>
+            </div>
+            <p>{{ rv.comment or '（無文字）' }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">目前還沒有評論。</p>
+    {% endif %}
+
+    {# 表單：新增 / 更新評論（需登入） #}
+    {% if current_user.is_authenticated %}
+      <h4>新增/更新評論</h4>
+      <form method="post" action="{{ url_for('recipes.add_or_update_review', rid=r.id) }}">
+        <label for="rating">評分（1–5）</label>
+        <select id="rating" name="rating" required>
+          {% for i in range(1, 6) %}
+            <option value="{{ i }}">{{ i }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="comment">評論</label>
+        <textarea id="comment" name="comment" rows="3" maxlength="1000" placeholder="想說點什麼？"></textarea>
+
+        <button type="submit" class="button">
+          <i class="fa-regular fa-paper-plane"></i> 送出
+        </button>
+      </form>
+    {% else %}
+      <p class="muted">請先登入以撰寫評論。</p>
+    {% endif %}
+  </section>
+
+
+</article>
+{% endblock %}

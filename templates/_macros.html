@@ -1,0 +1,17 @@
+{# templates/_macros.html #}
+{% macro stars(avg) %}
+  {% set a = (avg or 0) | float %}
+  {% for i in range(1,6) %}
+    {% if a >= i %}<i class="fa-solid fa-star star"></i>
+    {% elif a >= i - 0.5 %}<i class="fa-solid fa-star-half-stroke star"></i>
+    {% else %}<i class="fa-regular fa-star star"></i>{% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro cover(url, name) %}
+  {% if url %}
+    <img src="{{ url }}" alt="{{ name }}" loading="lazy" />
+  {% else %}
+    <div class="ph-cover" aria-label="no image">{{ name[:1] }}</div>
+  {% endif %}
+{% endmacro %}

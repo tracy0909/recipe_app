@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as m %}
+{% block title %}所有食譜{% endblock %}
+{% block content %}
+<!-- <section class="hero pro">
+  <h1>開始建立與管理您的專屬食譜</h1>
+  <p class="muted">整理靈感、管理食材、記錄步驟，打造你的料理知識庫。</p>
+  <div class="cta">
+    {% if current_user.is_authenticated %}
+      <a class="button primary" href="{{ url_for('recipes.new') }}">+ 新增食譜</a>
+      <a class="button" href="{{ url_for('recipes.index') }}">所有食譜</a>
+    {% else %}
+      <a class="button primary" href="{{ url_for('auth.register') }}">註冊開始</a>
+      <a class="button" href="{{ url_for('auth.login') }}">我已有帳號</a>
+    {% endif %}
+  </div>
+</section> -->
+<form method="get" action="{{ url_for('recipes.index') }}" class="filter-bar" style="margin: 20px 0; display: flex; gap: 1em; align-items: center;">
+  <!-- 🏷️ 分類選單 -->
+  <label for="category">分類：</label>
+  <select name="category_id" id="category" onchange="this.form.submit()">
+    <option value="">全部分類</option>
+    {% for c, count in categories %}
+      <option value="{{ c.id }}" {% if selected_category_id == c.id %}selected{% endif %}>
+        {{ c.name }}（{{ count }}）
+      </option>
+    {% endfor %}
+  </select>
+
+  <!-- 🚫 過敏原篩選 -->
+  <label for="allergen">過敏原：</label>
+  <select name="allergen_id" id="allergen" onchange="this.form.submit()">
+    <option value="">無（顯示全部）</option>
+    {% for a in allergens %}
+      <option value="{{ a.id }}" {% if selected_allergen_id == a.id %}selected{% endif %}>
+        {{ a.name }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+
+<!-- <form method="get" action="{{ url_for('recipes.index') }}" class="filter-bar" style="margin: 20px 0; display: flex; gap: 1em; align-items: center;">
+  <label for="category">分類：</label>
+  <select name="category_id" id="category" onchange="this.form.submit()">
+    <option value="">全部分類</option>
+    {% for c, count in categories %}
+      <option value="{{ c.id }}"  {% if request.args.get('category_id')|int == c.id %}selected{% endif %}>
+        {{ c.name }}（{{ count }}）
+      </option>
+    {% endfor %}
+  </select>
+
+  <label for="allergen">過敏原：</label>
+  <select name="allergen_id" id="allergen" onchange="this.form.submit()">
+    <option value="">無（顯示全部）</option>
+    {% for a in allergens %}
+      <option value="{{ a.id }}" {% if selected_allergen_id == a.id %}selected{% endif %}>
+        {{ a.name }}
+      </option>
+    {% endfor %}
+  </select>
+</form> -->
+
+<div class="cards pro">
+  {% for r in recipes %}
+    {% set avg = (r.reviews|map(attribute='rating')|list)|length and ((r.reviews|map(attribute='rating')|sum) / (r.reviews|length)) or 0 %}
+    <article class="card hover-rise">
+      <a class="thumb" href="{{ url_for('recipes.show', rid=r.id) }}">
+        {{ m.cover(r.image_url, r.name) }}
+      </a>
+      <div class="body">
+        <header>
+          <h3><a href="{{ url_for('recipes.show', rid=r.id) }}">{{ r.name }}</a></h3>
+          {% if r.category %}<span class="badge">{{ r.category.name }}</span>{% endif %}
+        </header>
+        <p class="desc">{{ r.description or '—' }}</p>
+        <footer>
+          <span class="muted"><i class="fa-regular fa-clock"></i> {{ r.cook_time_min }} 分鐘</span>
+          <span class="stars">{{ m.stars(avg) }} <small>{{ '%.1f' % avg }}</small></span>
+        </footer>
+      </div>
+    </article>
+  {% else %}
+    <div class="empty">
+      <i class="fa-regular fa-face-smile"></i>
+      <p>目前沒有食譜，<a href="{{ url_for('recipes.new') }}">新增第一個</a>吧！</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

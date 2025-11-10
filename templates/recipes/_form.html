@@ -1,0 +1,11 @@
+<form method="post">
+  <label>食譜名稱 <input name="name" value="{{ form.name.data or '' }}" required maxlength="120"></label>
+  <label>分類名稱 <input name="category" value="{{ form.category.data or '' }}" required maxlength="80"></label>
+  <label>料理時間(分鐘) <input type="number" min="0" name="cook_time_min" value="{{ form.cook_time_min.data or 0 }}" required></label>
+  <label>封面圖片 URL（可選） <input name="image_url" value="{{ form.image_url.data or '' }}"></label>
+  <label>敘述 <textarea name="description" rows="3">{{ form.description.data or '' }}</textarea></label>
+  <label>步驟（每行一個）<textarea name="steps_text" rows="5">{{ form.steps_text.data or '' }}</textarea></label>
+    <label>食材</label>
+    <textarea name="ingredients_text" rows="5" placeholder="蛋,2,顆\n牛奶,50,ml">{{ form.ingredients_text.data or '' }}</textarea>
+    <button type="submit">送出</button>
+</form>

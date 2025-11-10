@@ -1,0 +1,72 @@
+<!-- templates/base.html（覆蓋舊檔） -->
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Recipes{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  </head>
+  <body>
+    <header class="site-header glassy">
+      <nav class="container nav">
+        <ul>
+          <li><a href="/" class="icon-btn" style="font-weight:800;">🍳 Recipes</a></li>
+          <li><a href="{{ url_for('recipes.index') }}" class="icon-btn">所有食譜</a></li>
+        </ul>
+        <ul>
+          <li>
+            <button class="icon-btn" id="themeToggle" title="切換主題" aria-label="切換主題">
+              <i class="fa-regular fa-moon"></i>
+            </button>
+          </li>
+          {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('recipes.new') }}" class="icon-btn"><i class="fa fa-plus"></i> 新增食譜</a></li>
+            <li><a href="{{ url_for('main.dashboard') }}" class="icon-btn"><i class="fa fa-user"></i> {{ current_user.username }}</a></li>
+            <li><a href="{{ url_for('auth.logout') }}" class="icon-btn">登出</a></li>
+          {% else %}
+            <li><a href="{{ url_for('auth.login') }}">登入</a></li>
+            <li><a href="{{ url_for('auth.register') }}">註冊</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container page">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash">
+            {% for cat, msg in messages %}
+              <div class="chip chip-{{cat}}"><i class="fa-solid fa-circle-info"></i> {{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <script>
+      // 深色模式切換（記憶在 localStorage）
+      const root = document.documentElement;
+      const key = 'recipes-theme';
+      const cur = localStorage.getItem(key) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      root.setAttribute('data-theme', cur);
+      document.getElementById('themeToggle').addEventListener('click', ()=>{
+        const now = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', now); localStorage.setItem(key, now);
+      });
+
+      // 自動暫時顯示 flash 於 toast
+      const t = document.getElementById('toast');
+      const flash = document.querySelector('.flash');
+      if (flash) {
+        t.textContent = flash.textContent.trim();
+        t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2200);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}編輯食譜{% endblock %}
+{% block content %}
+<h2>編輯：{{ r.name }}</h2>
+{% include 'recipes/_form.html' %}
+{% endblock %}

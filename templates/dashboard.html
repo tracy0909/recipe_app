@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}控制台{% endblock %}
+{% block content %}
+{% import '_macros.html' as m %}
+<h2>Hi, {{ user.username }}！</h2>
+<p>開始管理你的食譜</p>
+<div class="cards pro">
+  {% for r in recipes | selectattr("user_id", "equalto", user.id) %}  
+    {% set avg = (r.reviews|map(attribute='rating')|list)|length and ((r.reviews|map(attribute='rating')|sum) / (r.reviews|length)) or 0 %}
+    <article class="card hover-rise">
+      <a class="thumb" href="{{ url_for('recipes.show', rid=r.id) }}">
+        {{ m.cover(r.image_url, r.name) }}
+      </a>
+      <div class="body">
+        <header>
+          <h3><a href="{{ url_for('recipes.show', rid=r.id) }}">{{ r.name }}</a></h3>
+          {% if r.category %}<span class="badge">{{ r.category.name }}</span>{% endif %}
+        </header>
+        <p class="desc">{{ r.description or '—' }}</p>
+        <footer>
+          <span class="muted"><i class="fa-regular fa-clock"></i> {{ r.cook_time_min }} 分鐘</span>
+          <span class="stars">{{ m.stars(avg) }} <small>{{ '%.1f' % avg }}</small></span>
+        </footer>
+      </div>
+    </article>
+  {% else %}
+    <div class="empty">
+      <i class="fa-regular fa-face-smile"></i>
+      <p>目前沒有食譜，<a href="{{ url_for('recipes.new') }}">新增第一個</a>吧！</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
